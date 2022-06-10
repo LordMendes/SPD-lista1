@@ -6,26 +6,30 @@ import java.util.stream.IntStream;
 public class CrivoParallelData extends Thread {
   private ArrayList<Integer> numberList;
   private Integer pNumber;
-  private Integer index;
+  private Integer start;
+  private Integer end;
 
-  public CrivoParallelData(ArrayList<Integer> numberList, Integer pNumber, Integer index) {
+  public CrivoParallelData(ArrayList<Integer> numberList, Integer pNumber, Integer start, Integer end) {
     this.pNumber = pNumber;
     this.numberList = numberList;
-    this.index = index;
+    this.start = start;
+    this.end = end;
   }
 
   private Boolean isMultiple(Integer pNumber, Integer testedNumber) {
     return testedNumber % pNumber == 0;
   }
 
-  private void removeMultiple() {
-    if (isMultiple(this.pNumber, numberList.get(this.index)) && numberList.get(this.index) != this.pNumber) {
-      this.numberList.set(this.index, 0);
+  private void removeMultiples() {
+    for (Integer i = start; i <= end; i++) {
+      if (isMultiple(pNumber, numberList.get(i)) && numberList.get(i) != pNumber) {
+        this.numberList.set(i, 0);
+      }
     }
   }
 
   public void run() {
-    this.removeMultiple();
+    this.removeMultiples();
   }
 
   public static void main(String[] args) {
@@ -49,36 +53,60 @@ public class CrivoParallelData extends Thread {
     ArrayList<Integer> numberList = new ArrayList<Integer>(IntStream.range(2, arraySize + 1)
         .boxed()
         .collect(Collectors.toList()));
+
     Integer pNumber = 2;
-    Integer index = 0;
+
+    int pieces = numberList.size() / nThreads;
+    int rest = numberList.size() % nThreads;
+    int pieceSize = pieces * nThreads;
+    int start = 0;
+    int end = pieceSize - 1;
+    Boolean minusPlus = false;
+    Integer k = 1;
     long startTime = System.currentTimeMillis();
 
-      while (index < numberList.size()) {
-        ArrayList<CrivoParallelData> threads = new ArrayList<CrivoParallelData>();
-        for (int i = 0; i < nThreads; i++) {
-          threads.add(new CrivoParallelData(numberList, pNumber, index));
-
-          index++;
-          if (index > numberList.size() - 1) {
-            break;
-          }
+    while (Math.pow(pNumber,2) < arraySize) {
+      ArrayList<CrivoParallelData> threads = new ArrayList<CrivoParallelData>();
+      for (int i = 0; i < nThreads; i++) {
+        if (end < numberList.size() - rest - 1) {
+          end = start + pieceSize - 1;
+          threads.add(new CrivoParallelData(numberList, pNumber, start, end));
+          start += pieceSize;
+        } else {
+          end = numberList.size() - 1;
+          threads.add(new CrivoParallelData(numberList, pNumber, start, end));
+          start += rest;
         }
-        for (CrivoParallelData thread : threads) {
-          thread.start();
-        }
-        for (CrivoParallelData thread : threads) {
-          try {
-            thread.join();
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
+        if (start >= numberList.size()) {
+          break;
         }
       }
+      for (CrivoParallelData thread : threads) {
+        thread.start();
+      }
+      for (CrivoParallelData thread : threads) {
+        try {
+          thread.join();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      if (pNumber > 3) {
+        pNumber = minusPlus ? 6 * k + 1 : 6 * k - 1;
+        minusPlus = !minusPlus;
+        if (minusPlus)
+          k++;
+      } else {
+        pNumber++;
+      }
+      start=0;
+    }
 
     long endTime = System.currentTimeMillis();
     System.out.println("Tempo de execução: " + (endTime - startTime) + "ms");
     numberList.removeIf(filter -> filter == 0);
-    // System.out.println("Numeros primos: " + numberList);
+    System.out.println("Numeros primos: " + numberList);
+    System.out.println("Quantidade de numeros primos: " + numberList.size());
 
   }
 

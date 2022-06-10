@@ -83,6 +83,7 @@ public class CrivoParallelControl extends Thread {
     System.out.println("Tempo de execução: " + (endTime - startTime) + "ms");
     numberList.removeIf(filter -> filter == 0);
     System.out.println("Numeros primos: " + numberList);
+    System.out.println("Quantidade de numeros primos: " + numberList.size());
 
   }
 
