@@ -3,7 +3,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Crivo  {
+public class Crivo {
   private ArrayList<Integer> numberList;
   private Integer pNumberPosition;
 
@@ -28,7 +28,7 @@ public class Crivo  {
   }
 
   private Void removeMultiples(Integer pNumber) {
-    for (int i = 0; i < numberList.size(); i++) {
+    for (int i = (int) Math.pow(pNumber,2); i < numberList.size(); i++) {
       if (isMultiple(pNumber, numberList.get(i)) && numberList.get(i) != pNumber) {
         this.numberList.remove(i);
       }
@@ -39,7 +39,6 @@ public class Crivo  {
   public void executeAlgorithm() {
     while (this.pNumberPosition < this.numberList.size() - 1) {
       Integer pNumber = this.getPNumber();
-      System.out.println(pNumber);
       this.removeMultiples(pNumber);
     }
   }
@@ -69,10 +68,12 @@ public class Crivo  {
 
     Crivo crivo = new Crivo(arraySize);
 
+    long startTime = System.currentTimeMillis();
     crivo.executeAlgorithm();
+    long endTime = System.currentTimeMillis();
 
-    System.out.println("Primos: " + crivo.getPrimeList());
+    System.out.println("Tempo de execução: " + (endTime - startTime) + "ms");
+    // System.out.println("Primos: " + crivo.getPrimeList());
 
   }
-
 }
